@@ -1,9 +1,9 @@
 #include <SPI.h>
 #include "ads12xx.h"
 
-int  START = 26;
-int  CS = 21;
-int  DRDY = 24;
+int  START = 5;
+int  CS = 3;
+int  DRDY = 2;
 
 //Define which ADC to use in the ads12xx.h file
 
@@ -13,15 +13,15 @@ void setup()
 {
 	Serial.begin(115200);
 	while (!Serial) {
-		
+
 	}
 	Serial.println("Serial online");
-	pinMode(20, OUTPUT);
-	digitalWrite(20, HIGH); //Force other Chip into CS high
+	// pinMode(20, OUTPUT);
+	// digitalWrite(20, HIGH); //Force other Chip into CS high
 	ADS.begin(CS, START, DRDY);  //initialize ADS as object of the ads12xx class
 
 	ADS.Reset();
-	
+
 	delay(10);
 
 	Serial.println("Commands for testing:");
@@ -48,10 +48,9 @@ void loop() {
 		case 'r':
 			Serial.println("Which Register to read?");
 			while (!Serial.available());
-			Serial.print("Register Value for: ");
 			cin1 = Serial.parseInt();
 			Serial.println(cin1);
-			Serial.println(ADS.GetRegisterValue(cin1));
+			Serial.println(ADS.GetRegisterValue(cin1), BIN);
 			break;
 		case 'w':
 			Serial.println("Which Register to write?");
@@ -73,7 +72,7 @@ void loop() {
 			Serial.println("Writing predefind Registers");
 #ifdef ADS1256
 			ADS.SetRegisterValue(MUX, P_AIN0 | N_AINCOM);
-			ADS.SetRegisterValue(DRATE, DR_1000);
+			ADS.SetRegisterValue(DRATE, DR_30000);
 #endif
 #ifdef ADS1248
 			ADS.SetRegisterValue(SYS0, DOR3_2000 | PGA2_0);
@@ -100,9 +99,10 @@ void loop() {
 				Serial.println(data);
 
 #ifdef ADS1256
-				//	double voltage = (4.9986 / 8388608)*data;
-				//	Serial.println(voltage);
+				// double voltage = (4.9986 / 8388608)*data;
+				// Serial.println(voltage);
 #endif
+			// delay(50);
 			}
 			break;
 		case 'f':
@@ -114,7 +114,7 @@ void loop() {
 			break;
 		case 'c':
 			Serial.println("Which Calibration to run?");
-#ifdef ADS1256			
+#ifdef ADS1256
 			Serial.println("'1' for SELFCAL");
 #endif
 #ifdef ADS1248
@@ -326,7 +326,7 @@ void test_Thermo() {
 	ADS.SetRegisterValue(MUX0, MUX_SP2_AIN0 | MUX_SN2_AIN1);
 	ADS.SetRegisterValue(MUX1, REFSELT1_ON | VREFCON1_ON);	  //ADS Reference on Intern, Internal Reference on
 	ADS.SetRegisterValue(VBIAS, VBIAS_0);
-	ADS.SetRegisterValue(SYS0, PGA2_128);		   // 2000 sps vollkommen unütz rauschen überwiegt
+	ADS.SetRegisterValue(SYS0, PGA2_128);		   // 2000 sps vollkommen unï¿½tz rauschen ï¿½berwiegt
 
 	long volt_val = ADS.GetConversion();
 	if (long minus = volt_val >> 23 == 1) {
