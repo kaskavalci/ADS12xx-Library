@@ -49,6 +49,7 @@ public:
   };
 
   long GetConversion();
+  long GetContConversion(int32_t buffer[], uint16_t len);
 
 private:
   int _CS;

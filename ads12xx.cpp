@@ -40,6 +40,30 @@ void ads12xx::begin(int CS, int START, int DRDY) {
   // interal VREF einschalten
 }
 
+long ads12xx::GetContConversion(int32_t buffer[], uint16_t len) {
+  SPI.beginTransaction(SPISettings(SPI_SPEED, MSBFIRST, SPI_MODE1));
+
+  digitalWrite(_CS, LOW); // Pull SS Low to Enable Communications with
+  // SPI.transfer(WAKEUP);
+  SPI.transfer(RDATAC);
+  delayMicroseconds(10); // RD: Wait 25ns for ADC12xx to get ready
+
+  for (size_t i = 0; i < len; ++i) {
+    waitforDRDY(); // Wait until DRDY is LOW
+
+    buffer[i] |= SPI.transfer(NOP);
+    buffer[i] <<= 8;
+    buffer[i] |= SPI.transfer(NOP);
+    buffer[i] <<= 8;
+    buffer[i] |= SPI.transfer(NOP);
+  }
+
+  SPI.transfer(SDATAC);
+
+  digitalWrite(_CS, HIGH);
+  SPI.endTransaction();
+}
+
 // function to get a 3byte conversion result from the adc
 long ads12xx::GetConversion() {
   int32_t regData;
@@ -48,7 +72,7 @@ long ads12xx::GetConversion() {
   digitalWrite(_CS, LOW); // Pull SS Low to Enable Communications with
   // ADS1247
   delayMicroseconds(10); // RD: Wait 25ns for ADC12xx to get ready
-  SPI.transfer(RDATA);   // Issue RDATA
+  SPI.transfer(RDATAC);  // Issue RDATA
   delayMicroseconds(10);
   regData |= SPI.transfer(NOP);
   // delayMicroseconds(10);
@@ -58,6 +82,7 @@ long ads12xx::GetConversion() {
   regData <<= 8;
   regData |= SPI.transfer(NOP);
   delayMicroseconds(10);
+  SPI.transfer(SDATAC);
   digitalWrite(_CS, HIGH);
   SPI.endTransaction();
 
